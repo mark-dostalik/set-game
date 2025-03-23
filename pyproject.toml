@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+
+[project]
+name = "set-game"
+dynamic = ["version"]
+authors = [
+    {name = "Mark Dostalík", email = "mark.dostalik@gmail.com"},
+]
+readme = "README.md"
+dependencies = [
+    "click>=8.1.8",
+    "plotly[express]>=6.0.1",
+    "polars>=1.26.0",
+    "rich>=13.9.4",
+]
+requires-python = ">=3.13"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.15.0",
+    "ruff>=0.11.2",
+]
+
+[project.scripts]
+set-simulator = "set_game.simulation.main:main"

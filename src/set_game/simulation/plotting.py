@@ -26,23 +26,30 @@ class SETStatsPlotter:
     def _plot_state_stats(self) -> None:
         """Plots game state statistics for states where at least 12 cards are dealt."""
         df = pl.read_csv(self.statistics_path / 'state_stats.csv')
-        for kind, ylabel in zip(
-                ['avg_num_sets', 'prob_no_set'],
-                ['average # of sets in dealt', 'probability of no set in dealt'],
+        for kind, ylabel, title in zip(
+                ['num_sets_mean', 'prob_no_set'],
+                ['mean of # SETs in dealt', 'probability of no SET in dealt'],
+                ['Average number of SETs', 'Cap SET probability']
         ):
+            hover_data: dict[str, bool | str] = {'num_occurrences': ':,'}
+            if kind == 'num_sets_mean':
+                hover_data = {'num_sets_var': True, 'num_occurrences': ':,'}
+
             fig = px.line(
                 df.filter(pl.col('dealt') >= 12),
                 x='in_deck',
                 y=kind,
                 color='dealt',
-                hover_data=['num_occurrences'],
+                hover_data=hover_data,
                 markers=True,
                 labels={
                     'in_deck': '# cards in deck',
                     kind: ylabel,
-                    'dealt': '# cards in dealt',
+                    'dealt': '# dealt cards',
                     'num_occurrences': '# occurrences',
+                    'num_sets_var': 'variance of # SETs in dealt',
                 },
+                title=title,
             )
             fig.update_xaxes(autorange='reversed')
             fig.update_yaxes(minor=dict(tickmode='auto', nticks=5, showgrid=True))
@@ -50,18 +57,20 @@ class SETStatsPlotter:
                 font=dict(
                     family="Lato, sans-serif",
                     weight=100,
+                    color='black',
                 ),
                 xaxis=dict(
                     tickmode='array',
                     tickvals=list(range(69, -3, -3)),
                 ),
                 legend=dict(
-                    yanchor='top',
-                    y=0.99,
-                    xanchor='left',
-                    x=0.01,
+                    orientation='h',
+                    yanchor='bottom',
+                    y=1.01,
+                    xanchor='right',
+                    x=1,
                 ),
-                margin=dict(l=20, r=20, t=20, b=20),
+                margin=dict(l=0, r=0, b=40, t=60),
             )
             fig.update_traces(
                 marker=dict(
@@ -78,7 +87,7 @@ class SETStatsPlotter:
         """
         Plots probability distribution of number of cards remaining at the end of the game.
 
-        The same distribution corresponds to the total number of sets found during the game.
+        The same distribution corresponds to the total number of SETs found during the game.
         """
         df = pl.read_csv(self.statistics_path / 'prob_num_remain_cards.csv')
         fig = go.Figure()
@@ -98,23 +107,24 @@ class SETStatsPlotter:
             font=dict(
                 family="Lato, sans-serif",
                 weight=100,
+                color='black',
             ),
-            margin=dict(l=20, r=20, t=20, b=20),
+            margin=dict(l=0, r=0, t=50, b=50),
             hovermode='closest',
             yaxis=dict(
-                domain=[0.1, 1.0],
+                domain=[0.15, 1.0],
                 title=dict(
                     text='probability',
                 )
             ),
             xaxis=dict(
                 title=dict(
-                    text='total # of collected sets during a game',
+                    text='total # collected SETs during the game',
                 ),
             ),
             xaxis2=dict(
                 title=dict(
-                    text='# of remaining cards at the end of the game',
+                    text='# remaining cards at the end of the game',
                 ),
                 anchor="free",
                 overlaying="x",
@@ -124,6 +134,7 @@ class SETStatsPlotter:
                 tickvals=list(range(18, -3, -3)),
                 autorange='reversed',
             ),
+            title='Distribution of total number of SETs collected',
         )
         fig.write_html(self.output_folder_path / 'num_found_sets.html', full_html=False)
 
@@ -141,8 +152,9 @@ class SETStatsPlotter:
             font=dict(
                 family="Lato, sans-serif",
                 weight=100,
+                color='black',
             ),
-            margin=dict(l=20, r=20, t=20, b=20),
+            margin=dict(l=0, r=0, t=50, b=60),
             hovermode='closest',
             yaxis=dict(
                 title=dict(
@@ -151,11 +163,12 @@ class SETStatsPlotter:
             ),
             xaxis=dict(
                 title=dict(
-                    text='maximum # of dealt cards during a game',
+                    text='maximum # dealt cards during the game',
                 ),
                 tickmode='array',
                 tickvals=list(range(12, 24, 3)),
             ),
+            title='Distribution of maximum number of dealt cards',
         )
         fig.write_html(self.output_folder_path / 'max_num_dealt.html', full_html=False)
 

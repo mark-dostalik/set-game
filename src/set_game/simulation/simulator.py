@@ -22,6 +22,7 @@ logger = logging.getLogger('rich')
 class StateRunningTotal:
     """Running totals for individual game states."""
     num_sets: int = 0
+    num_sets_squared: int = 0
     no_set: int = 0
     occurrence: int = 0
 
@@ -29,6 +30,7 @@ class StateRunningTotal:
         if isinstance(other, StateRunningTotal):
             return StateRunningTotal(
                 self.num_sets + other.num_sets,
+                self.num_sets_squared + other.num_sets_squared,
                 self.no_set + other.no_set,
                 self.occurrence + other.occurrence
             )
@@ -38,7 +40,8 @@ class StateRunningTotal:
 @dataclass
 class StateStatistics:
     """Statistics for individual game states."""
-    avg_num_sets: float = 0
+    num_sets_mean: float = 0
+    num_sets_var: float = 0
     prob_no_set: float = 0
     occurrence: int = 0
 
@@ -151,6 +154,7 @@ class SETSimulator:
             curr_max_dealt = max(curr_max_dealt, len(dealt))
 
             running_totals[len(dealt)][len(deck)].num_sets += len(sets_in_dealt)
+            running_totals[len(dealt)][len(deck)].num_sets_squared += len(sets_in_dealt) ** 2
             running_totals[len(dealt)][len(deck)].occurrence += 1
 
             if not sets_in_dealt:
@@ -204,12 +208,18 @@ class SETSimulator:
         self.stats.prob_max_dealt = {i: self.max_dealt.get(i, 0) / self.max_dealt.total() for i in range(12, 24, 3)}
         self.stats.state_stats = defaultdict(dict)
         for dealt in self.running_totals.keys():
-            for in_deck, running_total in self.running_totals[dealt].items():
-                if running_total.occurrence > 0:
+            for in_deck, run_tot in self.running_totals[dealt].items():
+                n = run_tot.occurrence
+                if n > 0:
+                    mean = run_tot.num_sets / n
+                    variance = None
+                    if n > 1:
+                        variance = (run_tot.num_sets_squared - 2 * mean * run_tot.num_sets + n * mean ** 2) / (n - 1)
                     self.stats.state_stats[dealt][in_deck] = StateStatistics(
-                        avg_num_sets=running_total.num_sets / running_total.occurrence,
-                        prob_no_set=running_total.no_set / running_total.occurrence,
-                        occurrence=running_total.occurrence,
+                        num_sets_mean=mean,
+                        num_sets_var=variance,
+                        prob_no_set=run_tot.no_set / n,
+                        occurrence=n,
                     )
 
     def save_statistics(self, output_folder_path: Path) -> None:
@@ -226,14 +236,22 @@ class SETSimulator:
 
         pl.DataFrame(
             data=[
-                [dealt, in_deck, case_stat.avg_num_sets, case_stat.prob_no_set, case_stat.occurrence]
+                [
+                    dealt,
+                    in_deck,
+                    case_stat.num_sets_mean,
+                    case_stat.num_sets_var,
+                    case_stat.prob_no_set,
+                    case_stat.occurrence
+                ]
                 for dealt, values in self.stats.state_stats.items()
                 for in_deck, case_stat in values.items()
             ],
             schema=[
                 ('dealt', pl.UInt8),
                 ('in_deck', pl.UInt8),
-                ('avg_num_sets', pl.Float32),
+                ('num_sets_mean', pl.Float32),
+                ('num_sets_var', pl.Float32),
                 ('prob_no_set', pl.Float32),
                 ('num_occurrences', pl.UInt64),
             ],

@@ -1,5 +1,5 @@
-Monte Carlo simulator of the card game [SET](https://en.wikipedia.org/wiki/Set_(card_game)). For more details check out
-TODO.
+Monte Carlo simulator of the card game [SET](https://en.wikipedia.org/wiki/Set_(card_game)). For more details, check out
+the [GitHub Page](https://mark-dostalik.github.io/#set-game) dedicated to this project.
 
 To run the simulator on your own machine, clone this repository, `cd` into it, and run[^1]
 ```bash

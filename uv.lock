@@ -137,6 +137,15 @@ express = [
 ]
 
 [[package]]
+name = "plotly-stubs"
+version = "0.0.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/15/c1/3448098574d0bd352f157081137aa75e595466875361b69ad32b3e9f49e2/plotly_stubs-0.0.5.tar.gz", hash = "sha256:1f373acfd137a09b45a6e68adec0406c62347b5114b5f8f5529a27c0d3e418c5", size = 45908 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/31/02/f66f264c7cfc11eacddd5304b89fdf21f298260024f976e9232836bba163/plotly_stubs-0.0.5-py3-none-any.whl", hash = "sha256:2db5c784835e48aa7cd70165eb6ce1880d5fd149a32064182e3afe5d28e3f1f3", size = 92780 },
+]
+
+[[package]]
 name = "polars"
 version = "1.26.0"
 source = { registry = "https://pypi.org/simple" }
@@ -210,6 +219,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "mypy" },
+    { name = "plotly-stubs" },
     { name = "ruff" },
 ]
 
@@ -224,6 +234,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "mypy", specifier = ">=1.15.0" },
+    { name = "plotly-stubs", specifier = ">=0.0.5" },
     { name = "ruff", specifier = ">=0.11.2" },
 ]
 
